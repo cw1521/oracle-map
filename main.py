@@ -13,6 +13,7 @@ from random import randint, seed
 INPUT_PATH = getcwd() + '\\input\\state-records-v2_1.json'
 
 
+
 # Returns the input sentence for the oracle
 def get_input_sentence(obj):
     output = ''
@@ -132,18 +133,14 @@ def get_sentence(sentences):
 # Accepts the measures and action as an input
 # returns the target sentence
 def get_target_sentence(obj, action):
-    # print(obj)
     pos = obj['position']
     sentence = ''
     template = get_sentences_template()
     if obj['is_demoed']:
-        # print(get_sentence(template['is_demoed']))
         return get_sentence(template['is_demoed'])
     if obj['boost_amount'] > 0:
-        # print(get_sentence(template['boost_amount']).replace('*r', str(obj['boost_amount'])))
         sentence += f" {get_sentence(template['boost_amount']).replace('*r', str(obj['boost_amount']))}"
     if obj['on_ground']:
-        # print(get_sentence(template['on_ground']))
         sentence += f" {get_sentence(template['on_ground'])}"
     sentence += f" {get_sentence(template['speed']).replace('*r', str(obj['speed']))}"
     sentence += f" {get_sentence(template['direction']).replace('*r', get_direction(obj['direction']))}"
