@@ -5,7 +5,7 @@ Thesis
 This program takes the parsed q file and creates an oracle for the training and testing data.
 '''
 from os import getcwd
-from json import load
+from json import load, dump
 from datetime import datetime
 from random import randint, seed
 
@@ -147,6 +147,10 @@ def get_target_sentence(obj, action):
     pos = obj['position']
     sentence = ''
     template = get_sentences_template()
+
+
+    # select sentences from the template and replace the attributes as necessary
+
     if obj['is_demoed']:
         return get_sentence(template['is_demoed'])
     if obj['boost_amount'] > 0:
@@ -158,13 +162,14 @@ def get_target_sentence(obj, action):
     sentence += f" {get_position_sentence(pos[0], pos[1])}"
     
     if action['handbrake']:
-        sentence += f" {get_sentence(action['handbrake'])}"
+        sentence += f" {get_sentence(template['action']['handbrake'])}"
     
-    sentence += f" {get_sentence(action['steer']).replace('*r', get_action('steer', action['steer']))}"
-    sentence += f" {get_sentence(action['throttle']).replace('*r', get_action('throttle', action['throttle']))}"
-    
-    if action['boost']:
-        sentence += f" {get_sentence(action['boost'])}"
+    else:
+        temp1 = f" {get_sentence(template['action']['steer']).replace('*r', get_action('steer', action['steer']))}"
+        temp2 = f" {get_sentence(template['action']['throttle']).replace('*r', get_action('throttle', action['throttle']))}"
+        sentence += f" {' and '.join([temp1.replace('.', ''), temp2])}"
+    # if action['boost']:
+    #     sentence += f" {get_sentence(template['action']['boost'])}"
 
 
     return sentence.strip()
@@ -225,19 +230,17 @@ def get_dataset(file_path):
         dataset = load(f)
     return dataset['data']
 
-
+def output_oracle():
+    seed(datetime.now())
+    dataset = get_dataset(INPUT_PATH)
+    oracle = get_oracle(dataset)
+    with open(OUTPUT_PATH, 'w') as f:
+        dump(oracle, f, indent=4)
 
 
 
 def main():
-    seed(datetime.now())
-    dataset = get_dataset(INPUT_PATH)
-    oracle = get_oracle(dataset)
-
-    # print(dataset)
-    # print(len(dataset))
-    print(oracle)
-    # print(len(oracle))
+    output_oracle()
 
 
 
