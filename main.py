@@ -136,9 +136,9 @@ def get_action(key, value):
             return 'right'
     if key == 'throttle':
         if value == 1:
-            return 'forwards'
+            return 'forward'
         else:
-            return 'backwards'
+            return 'backward'
 
 
 # Accepts the measures and action as an input
@@ -200,7 +200,7 @@ def get_sentences_template():
                 "I'm stopping", "I stopped."],
             'steer': ["I'm steering *r.", "I'm turning *r.", 'I turned *r.',
                  "I'm about to turn *r."],
-            'throttle': ["I'm driving *r", "I'm going *r.", "I'm moving *r.", "I'm travelling *r."],
+            'throttle': ["I'm driving *r.", "I'm going *r.", "I'm moving *r.", "I'm travelling *r."],
             'boost': ["I've used boost.", "I'm using boost.", "I've used the speed up.", "I have boosted."]
         }
     }
