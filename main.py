@@ -54,8 +54,32 @@ def get_direction(heading):
         return 'southeast'
 
 
-def get_position():
-    return ''
+def get_position(x,y):
+    pos = []
+    if x >= 0 and y >= 0:
+        pos.append('in quadrant 1')
+    if x < 0 and y >= 0:
+        pos.append('in quadrant 2')
+    if x < 0 and y < 0:
+        pos.append('in quadrant 3')    
+    if x >= 0 and y < 0:
+        pos.append('in quadrant 4')
+    if x <= 1000 and x >= -1000 and y <= 1000 and y >= -1000:
+        pos.append('near the center')
+    if x <= 1000 and x >= -1000 and y <= -3120:
+        pos.append('near the blue goal')
+    if x <= 1000 and x >= -1000 and y >= 3120:
+        pos.append('near the orange goal')
+    if x <= -3096:
+        pos.append('near the east wall')
+    if x >= 3096:
+        pos.append('near the west wall')
+    if y <= -4120:
+        pos.append('near the south wall')
+    if y >= 4120:
+        pos.append('near the north wall')
+    sentence = f"I'm {pos[0]} {' and '.join(pos[1:])}".strip() +'.'
+    return sentence
 
 
 
@@ -81,6 +105,7 @@ def get_sentence(sentences):
 # to do
 def get_target_sentence(obj):
     # print(obj)
+    pos = obj['position']
     sentence = ''
     template = get_sentences_template()
     if obj['is_demoed']:
@@ -94,7 +119,7 @@ def get_target_sentence(obj):
         sentence += f" {get_sentence(template['on_ground'])}"
     sentence += f" {get_sentence(template['speed']).replace('*r', str(obj['speed']))}"
     sentence += f" {get_sentence(template['direction']).replace('*r', get_direction(obj['direction']))}"
-
+    sentence += f" {get_position(pos[0], pos[1])}"
     return sentence.strip()
 
 
@@ -113,7 +138,8 @@ def get_sentences_template():
             'My current speed is *r mph.', 'My current speed is *r miles per hour.'],
         'direction': ["I'm currently traveling *r.", "I'm heading in the *r direction.",
             'My current direction is *r', "I'm heading *r."],
-        'position': []
+        'position': [],
+        'action': []
     }
     return template
 
@@ -131,7 +157,7 @@ def get_oracle(dataset):
         obj['input'] = get_input_sentence(data) +' action ' + ' '.join(str(elem) for elem in action)
         obj['target'] = get_target_sentence(data)
         oracle['data'].append(obj)
-        print(obj)
+        # print(obj)
     return oracle
 
 
@@ -152,7 +178,7 @@ def main():
 
     # print(dataset)
     # print(len(dataset))
-    # print(oracle)
+    print(oracle)
     # print(len(oracle))
 
 
