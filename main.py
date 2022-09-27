@@ -168,8 +168,8 @@ def get_target_sentence(obj, action):
         temp1 = f"{get_sentence(template['action']['steer']).replace('*r', get_action('steer', action['steer']))}".replace('.', '')
         temp2 = f"{get_sentence(template['action']['throttle']).replace('*r', get_action('throttle', action['throttle']))}"
         sentence += f" {' and '.join([temp1, temp2])}"
-    # if action['boost']:
-    #     sentence += f" {get_sentence(template['action']['boost'])}"
+    if action['boost']:
+        sentence += f" {get_sentence(template['action']['boost'])}"
 
 
     return sentence.strip()
