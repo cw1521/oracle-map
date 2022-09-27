@@ -67,9 +67,6 @@ def get_action_obj(action):
     action_obj = {}
     action_obj['throttle'] = action[0]
     action_obj['steer'] = action[1]
-    action_obj['pitch'] = action[2]
-    action_obj['yaw'] = action[3]
-    action_obj['roll'] = action[4]
     action_obj['jump'] = action[5]
     action_obj['boost'] = action[6]
     action_obj['handbrake'] = action[7]
@@ -139,7 +136,6 @@ def get_target_sentence(obj, action):
     pos = obj['position']
     sentence = ''
     template = get_sentences_template()
-    action_obj = get_action_obj(action)
     if obj['is_demoed']:
         # print(get_sentence(template['is_demoed']))
         return get_sentence(template['is_demoed'])
@@ -176,12 +172,12 @@ def get_sentences_template():
             "The ball is in my possession."],
         'speed': ['My current speed is *r.', "I'm travelling *r miles per hour.", 
             'My current speed is *r mph.', 'My current speed is *r miles per hour.'],
-        'direction': ["I'm currently traveling *r.", "I'm heading in the *r direction.",
-            'My current direction is *r', "I'm heading *r."],
+        'direction': ["I'm currently travelling *r.", "I'm heading in the *r direction.",
+            'My current direction is *r.', "I'm heading *r."],
         'position': [],
         'action': {
             'handbrake': ["I'm currently braking.", "I pressed the brakes.", 
-                "I'm stopping", "I had to stop."],
+                "I'm stopping", "I stopped."],
             'steer': ["I'm steering *r.", "I'm turning *r.", 'I turned *r.',
                  "I'm about to turn *r."],
             'throttle': ["I'm driving *r", "I'm going *r.", "I'm moving *r.", "I'm travelling *r."],
@@ -199,10 +195,10 @@ def get_oracle(dataset):
     oracle['data'] = []
     for data in dataset:
         obj = {}
-        action = data['action']
+        action = get_action_obj(data['action'])
         data = data['state']['measurements']
-        obj['input'] = get_input_sentence(data) +' action ' + ' '.join(str(elem) for elem in action)
-        oracle['target'] = get_target_sentence(data, action)
+        obj['input'] = f"{get_input_sentence(data)} {' '.join(f'{key} {action[key]}' for key in action.keys())}"
+        obj['target'] = get_target_sentence(data, action)
         oracle['data'].append(obj)
         # print(obj)
     return oracle
