@@ -54,7 +54,7 @@ def get_direction(heading):
         return 'southeast'
 
 
-def get_position(x,y):
+def get_position_sentence(x,y):
     pos = []
     if x >= 0 and y >= 0:
         pos.append('in quadrant 1')
@@ -119,7 +119,7 @@ def get_target_sentence(obj):
         sentence += f" {get_sentence(template['on_ground'])}"
     sentence += f" {get_sentence(template['speed']).replace('*r', str(obj['speed']))}"
     sentence += f" {get_sentence(template['direction']).replace('*r', get_direction(obj['direction']))}"
-    sentence += f" {get_position(pos[0], pos[1])}"
+    sentence += f" {get_position_sentence(pos[0], pos[1])}"
     return sentence.strip()
 
 
