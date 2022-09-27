@@ -13,6 +13,7 @@ from random import randint, seed
 INPUT_PATH = getcwd() + '\\input\\state-records-v2_1.json'
 
 
+# Returns the input sentence for the oracle
 def get_input_sentence(obj):
     output = ''
     for key in obj.keys():
@@ -35,6 +36,8 @@ def get_input_sentence(obj):
 #     return interval
 
 
+
+
 def get_direction(heading):
     if heading >= 337 or heading < 22:
         return "east"
@@ -52,6 +55,27 @@ def get_direction(heading):
         return 'south'
     elif heading >= 292 and heading < 337:
         return 'southeast'
+
+
+
+        
+    
+
+
+# temporary work around input file format
+def get_action_obj(action):
+    action_obj = {}
+    action_obj['throttle'] = action[0]
+    action_obj['steer'] = action[1]
+    action_obj['pitch'] = action[2]
+    action_obj['yaw'] = action[3]
+    action_obj['roll'] = action[4]
+    action_obj['jump'] = action[5]
+    action_obj['boost'] = action[6]
+    action_obj['handbrake'] = action[7]
+    return action_obj
+
+
 
 
 def get_position_sentence(x,y):
@@ -89,7 +113,10 @@ def get_interval():
     high = randint((mid+1), 100)
     return low, mid, high
 
-    
+
+
+# Input: 4 sentences for a category
+# Output: random choice of a sentence    
 def get_sentence(sentences):
     low, mid, high = get_interval()
     rand_num = randint(1, 100)
@@ -102,12 +129,17 @@ def get_sentence(sentences):
     elif rand_num > high:
         return sentences[3]
 
-# to do
-def get_target_sentence(obj):
+
+
+
+# Accepts the measures and action as an input
+# returns the target sentence
+def get_target_sentence(obj, action):
     # print(obj)
     pos = obj['position']
     sentence = ''
     template = get_sentences_template()
+    action_obj = get_action_obj(action)
     if obj['is_demoed']:
         # print(get_sentence(template['is_demoed']))
         return get_sentence(template['is_demoed'])
@@ -120,10 +152,18 @@ def get_target_sentence(obj):
     sentence += f" {get_sentence(template['speed']).replace('*r', str(obj['speed']))}"
     sentence += f" {get_sentence(template['direction']).replace('*r', get_direction(obj['direction']))}"
     sentence += f" {get_position_sentence(pos[0], pos[1])}"
+    
+    
+
+
     return sentence.strip()
 
 
 
+
+
+
+# returns the sentences template
 def get_sentences_template():
     template = {
         'is_demoed': ['My car has been demolished.', 'My car has exploded!',
@@ -139,14 +179,21 @@ def get_sentences_template():
         'direction': ["I'm currently traveling *r.", "I'm heading in the *r direction.",
             'My current direction is *r', "I'm heading *r."],
         'position': [],
-        'action': []
+        'action': {
+            'handbrake': ["I'm currently braking.", "I pressed the brakes.", 
+                "I'm stopping", "I had to stop."],
+            'steer': ["I'm steering *r.", "I'm turning *r.", 'I turned *r.',
+                 "I'm about to turn *r."],
+            'throttle': ["I'm driving *r", "I'm going *r.", "I'm moving *r.", "I'm travelling *r."],
+            'boost': ["I've used boost.", "I'm using boost.", "I've used the speed up.", "I have boosted."]
+        }
     }
     return template
 
 
 
 
-
+# returns the oracle from the data set
 def get_oracle(dataset):
     oracle = {}
     oracle['data'] = []
@@ -155,7 +202,7 @@ def get_oracle(dataset):
         action = data['action']
         data = data['state']['measurements']
         obj['input'] = get_input_sentence(data) +' action ' + ' '.join(str(elem) for elem in action)
-        obj['target'] = get_target_sentence(data)
+        oracle['target'] = get_target_sentence(data, action)
         oracle['data'].append(obj)
         # print(obj)
     return oracle
