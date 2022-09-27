@@ -11,6 +11,7 @@ from random import randint, seed
 
 
 INPUT_PATH = getcwd() + '\\input\\state-records-v2_1.json'
+OUTPUT_PATH = getcwd() + '\\output\\translation-oracle-v1.json'
 
 
 
@@ -127,7 +128,17 @@ def get_sentence(sentences):
     elif rand_num > high:
         return sentences[3]
 
-
+def get_action(key, value):
+    if key == 'steer':
+        if value == -1:
+            return 'left'
+        else:
+            return 'right'
+    if key == 'throttle':
+        if value == 1:
+            return 'forwards'
+        else:
+            return 'backwards'
 
 
 # Accepts the measures and action as an input
@@ -146,7 +157,14 @@ def get_target_sentence(obj, action):
     sentence += f" {get_sentence(template['direction']).replace('*r', get_direction(obj['direction']))}"
     sentence += f" {get_position_sentence(pos[0], pos[1])}"
     
+    if action['handbrake']:
+        sentence += f" {get_sentence(action['handbrake'])}"
     
+    sentence += f" {get_sentence(action['steer']).replace('*r', get_action('steer', action['steer']))}"
+    sentence += f" {get_sentence(action['throttle']).replace('*r', get_action('throttle', action['throttle']))}"
+    
+    if action['boost']:
+        sentence += f" {get_sentence(action['boost'])}"
 
 
     return sentence.strip()
