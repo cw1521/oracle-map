@@ -221,6 +221,12 @@ def get_oracle(dataset):
         obj['target'] = get_target_sentence(data, action)
         oracle['data'].append(obj)
         # print(obj)
+    i = len(oracle['data'])
+    training_len = int(i/2)
+    validation_len = int(i/5)
+    oracle['training'] = oracle['data'][0:training_len]
+    oracle['testing'] = oracle['data'][training_len+validation_len:]
+    oracle['validation'] = oracle['data'][training_len:training_len+validation_len]
     return oracle
 
 
@@ -230,18 +236,20 @@ def get_dataset(file_path):
         dataset = load(f)
     return dataset['data']
 
-def output_oracle():
-    seed(datetime.now())
-    dataset = get_dataset(INPUT_PATH)
-    oracle = get_oracle(dataset)
-    print(oracle)
+
+
+def write_oracle(oracle):
     with open(OUTPUT_PATH, 'w') as f:
         dump(oracle, f, indent=4)
 
 
 
 def main():
-    output_oracle()
+    seed(datetime.now())
+    dataset = get_dataset(INPUT_PATH)
+    oracle = get_oracle(dataset)
+    print(oracle)
+    write_oracle(oracle)
 
 
 
