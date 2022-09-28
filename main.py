@@ -223,8 +223,6 @@ def clean_dataset(dataset):
     print(len(data), len(dataset))
     return data
 
-        
-
 
 
 
@@ -233,6 +231,7 @@ def clean_dataset(dataset):
 # returns the oracle from the data set
 def get_oracle(dataset):
     oracle = {}
+    data_list = []
     oracle['all_data'] = []
     oracle['data'] = {}
     for data in dataset:
@@ -241,19 +240,26 @@ def get_oracle(dataset):
         data = data['state']['measurements']
         obj['input'] = f"{get_input_sentence(data)} {' '.join(f'{key} {action[key]}' for key in action.keys())}"
         obj['target'] = get_target_sentence(data, action)
-        oracle['all_data'].append(obj)
-        # print(obj)
+        data_list.append(obj)
 
-    oracle['all_data'] = clean_dataset(oracle['all_data'])
-    i = len(oracle['all_data'])
-    training_len = int(i/2)
-    validation_len = int(i/5)
-    oracle['data']['training'] = oracle['all_data'][0:training_len]
-    oracle['data']['testing'] = oracle['all_data'][training_len+validation_len:]
-    oracle['data']['validation'] = oracle['all_data'][training_len:training_len+validation_len]
+    oracle['all_data'] = clean_dataset(data_list)
+    training, testing, validation = split_dataset(oracle['all_data'])
+    oracle['data']['training'] = training 
+    oracle['data']['testing'] = testing
+    oracle['data']['validation'] = validation
     return oracle
 
 
+
+def split_dataset(dataset):
+    i = len(dataset)
+    training_len = int(i/1.5)
+    validation_len = int(i/5)
+
+    training = dataset[0:training_len]
+    testing = dataset[training_len+validation_len:i]
+    validation = dataset[training_len:training_len+validation_len]
+    return training, testing, validation
 
 
 
@@ -275,7 +281,7 @@ def main():
     dataset = get_dataset(INPUT_PATH)
     oracle = get_oracle(dataset)
     # print(oracle)
-    # write_oracle(oracle)
+    write_oracle(oracle)
 
 
 
