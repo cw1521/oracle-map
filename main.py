@@ -209,25 +209,51 @@ def get_sentences_template():
 
 
 
+def clean_dataset(dataset):
+    data = []
+    for item in dataset:
+        found = False
+        for elem in data:
+            if item['input'] == elem['input']:
+                if item['target'] == elem['target']:
+                    found = True
+                    break
+        if not found:
+            data.append(item)
+    print(len(data), len(dataset))
+    return data
+
+        
+
+
+
+
+
+
 # returns the oracle from the data set
 def get_oracle(dataset):
     oracle = {}
-    oracle['data'] = []
+    oracle['all_data'] = []
+    oracle['data'] = {}
     for data in dataset:
         obj = {}
         action = get_action_obj(data['action'])
         data = data['state']['measurements']
         obj['input'] = f"{get_input_sentence(data)} {' '.join(f'{key} {action[key]}' for key in action.keys())}"
         obj['target'] = get_target_sentence(data, action)
-        oracle['data'].append(obj)
+        oracle['all_data'].append(obj)
         # print(obj)
-    i = len(oracle['data'])
+
+    oracle['all_data'] = clean_dataset(oracle['all_data'])
+    i = len(oracle['all_data'])
     training_len = int(i/2)
     validation_len = int(i/5)
-    oracle['training'] = oracle['data'][0:training_len]
-    oracle['testing'] = oracle['data'][training_len+validation_len:]
-    oracle['validation'] = oracle['data'][training_len:training_len+validation_len]
+    oracle['data']['training'] = oracle['all_data'][0:training_len]
+    oracle['data']['testing'] = oracle['all_data'][training_len+validation_len:]
+    oracle['data']['validation'] = oracle['all_data'][training_len:training_len+validation_len]
     return oracle
+
+
 
 
 
@@ -245,11 +271,11 @@ def write_oracle(oracle):
 
 
 def main():
-    seed(datetime.now())
+    seed(10)
     dataset = get_dataset(INPUT_PATH)
     oracle = get_oracle(dataset)
-    print(oracle)
-    write_oracle(oracle)
+    # print(oracle)
+    # write_oracle(oracle)
 
 
 
