@@ -11,7 +11,11 @@ from random import randint, seed
 
 
 INPUT_PATH = getcwd() + '\\input\\state-records-v2_1.json'
-OUTPUT_PATH = getcwd() + '\\output\\translation-oracle-v1.json'
+TESTING_OUTPUT_PATH = getcwd() + '\\output\\oracle-testing-v1.json'
+TRAINING_OUTPUT_PATH = getcwd() + '\\output\\oracle-training-v1.json'
+
+VALIDATION_OUTPUT_PATH = getcwd() + '\\output\\oracle-validations-v1.json'
+
 
 
 
@@ -271,9 +275,16 @@ def get_dataset(file_path):
 
 
 def write_oracle(oracle):
-    with open(OUTPUT_PATH, 'w') as f:
-        dump(oracle, f, indent=4)
-
+    output = {}
+    with open(TRAINING_OUTPUT_PATH, 'w') as f:
+        output['data'] = oracle['data']['training']
+        dump(output, f, indent=4)
+    with open(TESTING_OUTPUT_PATH, 'w') as f:
+        output['data'] = oracle['data']['testing']
+        dump(output, f, indent=4)
+    with open(VALIDATION_OUTPUT_PATH, 'w') as f:
+        output['data'] = oracle['data']['validation']
+        dump(output, f, indent=4)
 
 
 def main():
