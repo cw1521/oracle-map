@@ -284,7 +284,7 @@ def split_dataset(dataset):
         'train': training,
         'valid': validation,
         'test':testing
-        }
+    }
     return ds
 
 
@@ -297,18 +297,19 @@ def get_dataset(file_path):
 
 
 def write_train_oracle(oracle):
-    seg = len(oracle['train'])//10
-    for i in range(10):
+    num_of_segs = 10
+    seg = len(oracle['train'])//num_of_segs
+    for i in range(num_of_segs):
         with open(TRAIN_OUTPUT_PATH.replace('.', f'{i+1}.'), 'w') as f:
-            dump(oracle['train'][i*seg:(i+1)*seg], f, indent=2)   
+            dump({'data':oracle['train'][i*seg:(i+1)*seg]}, f, indent=2)   
 
 
 def write_oracle(oracle):
     write_train_oracle(oracle)
     with open(TEST_OUTPUT_PATH, 'w') as f:
-        dump(oracle['test'], f, indent=2)
+        dump({'data':oracle['test']}, f, indent=2)
     with open(VALID_OUTPUT_PATH, 'w') as f:
-        dump(oracle['valid'], f, indent=2)
+        dump({'data':oracle['valid']}, f, indent=2)
 
 
 
