@@ -13,10 +13,10 @@ from random import randint, seed, shuffle
 
 
 INPUT_PATH = getcwd() + '\\input\\state-records-v2_2.json'
-TESTING_OUTPUT_PATH = getcwd() + '\\output\\oracle-testing-v1.json'
-TRAINING_OUTPUT_PATH = getcwd() + '\\output\\oracle-training-v1.json'
+TEST_OUTPUT_PATH = getcwd() + '\\output\\oracle-test.json'
+TRAIN_OUTPUT_PATH = getcwd() + '\\output\\oracle-train.json'
 
-VALIDATION_OUTPUT_PATH = getcwd() + '\\output\\oracle-validations-v1.json'
+VALID_OUTPUT_PATH = getcwd() + '\\output\\oracle-valid.json'
 
 
 OUTPUT_PATH = getcwd() + '\\output\\oracle-v1.json'
@@ -182,11 +182,13 @@ def get_target_sentence(obj, action):
     
     if action['handbrake']:
         sentence += f" {get_sentence(template['action']['handbrake'])}"
-    
     else:
         temp1 = f"{get_sentence(template['action']['steer']).replace('*r', get_action('steer', action['steer']))}".replace('.', '')
         temp2 = f"{get_sentence(template['action']['throttle']).replace('*r', get_action('throttle', action['throttle']))}"
         sentence += f" {' and '.join([temp1, temp2])}"
+
+
+        
     if action['boost']:
         sentence += f" {get_sentence(template['action']['boost'])}"
 
@@ -260,15 +262,15 @@ def get_oracle(dataset):
 
 def split_dataset(dataset):
     i = len(dataset)
-    training_len = int(i/0.1)
-    validation_len = int(i/0.8)
+    training_len = int(i*0.7)
+    validation_len = int(i*0.2)
 
     training = dataset[0:training_len]
     testing = dataset[training_len+validation_len:i]
     validation = dataset[training_len:training_len+validation_len]
     ds = {
         'train': training,
-        'validation': validation,
+        'valid': validation,
         'test':testing
         }
     return ds
@@ -281,10 +283,20 @@ def get_dataset(file_path):
     return dataset['data']
 
 
-def write_oracle(oracle):
-    with open(OUTPUT_PATH, 'w') as f:
-        dump(oracle, f, indent=2)
 
+def write_train_oracle(oracle):
+    seg = len(oracle['train'])//10
+    for i in range(10):
+        with open(TRAIN_OUTPUT_PATH.replace('.', f'{i+1}.'), 'w') as f:
+            dump(oracle['train'][i*seg:(i+1)*seg], f, indent=2)   
+
+
+def write_oracle(oracle):
+    write_train_oracle(oracle)
+    with open(TEST_OUTPUT_PATH, 'w') as f:
+        dump(oracle['test'], f, indent=2)
+    with open(VALID_OUTPUT_PATH, 'w') as f:
+        dump(oracle['valid'], f, indent=2)
 
 
 
