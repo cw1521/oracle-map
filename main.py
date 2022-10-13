@@ -9,7 +9,7 @@ This program takes the parsed q file and creates an oracle for the training and 
 from os import getcwd
 from json import load, dump, loads, dumps
 from datetime import datetime
-from random import randint, seed
+from random import randint, seed, shuffle
 
 
 INPUT_PATH = getcwd() + '\\input\\state-records-v2_2.json'
@@ -21,27 +21,26 @@ VALIDATION_OUTPUT_PATH = getcwd() + '\\output\\oracle-validations-v1.json'
 
 OUTPUT_PATH = getcwd() + '\\output\\oracle-v1.json'
 
+
+
+
+
 # Returns the input sentence for the oracle
 def get_input_sentence(obj):
     output = ''
-    for key in obj.keys():
+    keys = list(obj)
+    shuffle(keys)
+    for key in keys:
         if output != '':
             output += ' '
         if key == 'position':
             output += f"{key} {' '.join(str(elem) for elem in obj[key])}"
         else:
             output += f'{key} {str(obj[key])}'
+
     return output
 
 
-# def get_interval(num_divisions):
-#     interval = [0 for elem in range(num_divisions)]
-#     interval.insert(1, randint(1, 100))
-#     for i in range(0, num_divisions, 2):
-#         interval.insert(i+2, randint(1, 100))
-#         interval.insert(i, randint(1, interval[i+1]))
-#     print(interval)
-#     return interval
 
 
 
@@ -112,11 +111,18 @@ def get_position_sentence(x,y):
 
 
 
+
+
+
 def get_interval():
     mid = randint(2, 99)
     low = randint(1, mid-1)
     high = randint((mid+1), 100)
     return low, mid, high
+
+
+
+
 
 
 
@@ -134,6 +140,13 @@ def get_sentence(sentences):
     elif rand_num > high:
         return sentences[3]
 
+
+
+
+
+
+
+
 def get_action(key, value):
     if key == 'steer':
         if value == -1:
@@ -142,9 +155,9 @@ def get_action(key, value):
             return 'right'
     if key == 'throttle':
         if value == 1:
-            return 'forward'
+            return 'forwards'
         else:
-            return 'backward'
+            return 'backwards'
 
 
 # Accepts the measures and action as an input
@@ -215,22 +228,6 @@ def get_sentences_template():
 
 
 
-# def clean_dataset(dataset):
-#     data = []
-#     for item in dataset:
-#         found = False
-#         for elem in data:
-#             if item['input'] == elem['input']:
-#                 if item['target'] == elem['target']:
-#                     found = True
-#                     break
-#         if not found:
-#             data.append(item)
-#     print(len(data), len(dataset))
-#     return data
-
-
-
 
 def remove_duplicates(dataset):
     set_of_jsons = {dumps(d, sort_keys=True) for d in dataset}
@@ -245,20 +242,17 @@ def get_oracle(dataset):
     data_list = []
     oracle['all_data'] = []
     oracle['data'] = {}
-    for i in range(8):
+    for i in range(64):
         for data in dataset:
             obj = {}
             action = get_action_obj(data['action'])
             data = data['state']['measurements']
-            obj['input'] = f"{get_input_sentence(data)} {' '.join(f'{key} {action[key]}' for key in action.keys())}"
-            obj['target'] = get_target_sentence(data, action)
+            obj['input'] = f"{get_input_sentence(data)} {' '.join(f'{key} {action[key]}' for key in action.keys())}".replace('  ', ' ')
+            obj['target'] = get_target_sentence(data, action).replace('  ', ' ')
             data_list.append(obj)
-
+    print(len(data_list))
     oracle['all_data'] = remove_duplicates(data_list)
-    # training, testing, validation = split_dataset(oracle['all_data'])
-    # oracle['data']['training'] = training 
-    # oracle['data']['testing'] = testing
-    # oracle['data']['validation'] = validation
+    print(len(oracle['all_data']))
     return split_dataset(oracle['all_data'])
     
 
@@ -266,14 +260,17 @@ def get_oracle(dataset):
 
 def split_dataset(dataset):
     i = len(dataset)
-    print(len(dataset))
-    training_len = int(i/0.7)
-    
+    training_len = int(i/0.1)
+    validation_len = int(i/0.8)
 
     training = dataset[0:training_len]
-    # testing = dataset[training_len+validation_len:i]
-    validation = dataset[training_len:]
-    ds = {'train': training,  'validation': validation}
+    testing = dataset[training_len+validation_len:i]
+    validation = dataset[training_len:training_len+validation_len]
+    ds = {
+        'train': training,
+        'validation': validation,
+        'test':testing
+        }
     return ds
 
 
