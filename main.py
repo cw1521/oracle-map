@@ -4,20 +4,22 @@ Thesis
 17 September 2022
 This program takes the parsed q file and creates an oracle for the training and testing data.
 '''
+
+
 from os import getcwd
-from json import load, dump
+from json import load, dump, loads, dumps
 from datetime import datetime
 from random import randint, seed
 
 
-INPUT_PATH = getcwd() + '\\input\\state-records-v2_1.json'
+INPUT_PATH = getcwd() + '\\input\\state-records-v2_2.json'
 TESTING_OUTPUT_PATH = getcwd() + '\\output\\oracle-testing-v1.json'
 TRAINING_OUTPUT_PATH = getcwd() + '\\output\\oracle-training-v1.json'
 
 VALIDATION_OUTPUT_PATH = getcwd() + '\\output\\oracle-validations-v1.json'
 
 
-
+OUTPUT_PATH = getcwd() + '\\output\\oracle-v1.json'
 
 # Returns the input sentence for the oracle
 def get_input_sentence(obj):
@@ -213,21 +215,26 @@ def get_sentences_template():
 
 
 
-def clean_dataset(dataset):
-    data = []
-    for item in dataset:
-        found = False
-        for elem in data:
-            if item['input'] == elem['input']:
-                if item['target'] == elem['target']:
-                    found = True
-                    break
-        if not found:
-            data.append(item)
-    print(len(data), len(dataset))
-    return data
+# def clean_dataset(dataset):
+#     data = []
+#     for item in dataset:
+#         found = False
+#         for elem in data:
+#             if item['input'] == elem['input']:
+#                 if item['target'] == elem['target']:
+#                     found = True
+#                     break
+#         if not found:
+#             data.append(item)
+#     print(len(data), len(dataset))
+#     return data
 
 
+
+
+def remove_duplicates(dataset):
+    set_of_jsons = {dumps(d, sort_keys=True) for d in dataset}
+    return [loads(t) for t in set_of_jsons]
 
 
 
@@ -238,32 +245,36 @@ def get_oracle(dataset):
     data_list = []
     oracle['all_data'] = []
     oracle['data'] = {}
-    for data in dataset:
-        obj = {}
-        action = get_action_obj(data['action'])
-        data = data['state']['measurements']
-        obj['input'] = f"{get_input_sentence(data)} {' '.join(f'{key} {action[key]}' for key in action.keys())}"
-        obj['target'] = get_target_sentence(data, action)
-        data_list.append(obj)
+    for i in range(8):
+        for data in dataset:
+            obj = {}
+            action = get_action_obj(data['action'])
+            data = data['state']['measurements']
+            obj['input'] = f"{get_input_sentence(data)} {' '.join(f'{key} {action[key]}' for key in action.keys())}"
+            obj['target'] = get_target_sentence(data, action)
+            data_list.append(obj)
 
-    oracle['all_data'] = clean_dataset(data_list)
-    training, testing, validation = split_dataset(oracle['all_data'])
-    oracle['data']['training'] = training 
-    oracle['data']['testing'] = testing
-    oracle['data']['validation'] = validation
-    return oracle
+    oracle['all_data'] = remove_duplicates(data_list)
+    # training, testing, validation = split_dataset(oracle['all_data'])
+    # oracle['data']['training'] = training 
+    # oracle['data']['testing'] = testing
+    # oracle['data']['validation'] = validation
+    return split_dataset(oracle['all_data'])
+    
 
 
 
 def split_dataset(dataset):
     i = len(dataset)
-    training_len = int(i/1.5)
-    validation_len = int(i/5)
+    print(len(dataset))
+    training_len = int(i/0.7)
+    
 
     training = dataset[0:training_len]
-    testing = dataset[training_len+validation_len:i]
-    validation = dataset[training_len:training_len+validation_len]
-    return training, testing, validation
+    # testing = dataset[training_len+validation_len:i]
+    validation = dataset[training_len:]
+    ds = {'train': training,  'validation': validation}
+    return ds
 
 
 
@@ -273,18 +284,11 @@ def get_dataset(file_path):
     return dataset['data']
 
 
-
 def write_oracle(oracle):
-    output = {}
-    with open(TRAINING_OUTPUT_PATH, 'w') as f:
-        output['data'] = oracle['data']['training']
-        dump(output, f, indent=4)
-    with open(TESTING_OUTPUT_PATH, 'w') as f:
-        output['data'] = oracle['data']['testing']
-        dump(output, f, indent=4)
-    with open(VALIDATION_OUTPUT_PATH, 'w') as f:
-        output['data'] = oracle['data']['validation']
-        dump(output, f, indent=4)
+    with open(OUTPUT_PATH, 'w') as f:
+        dump(oracle, f, indent=2)
+
+
 
 
 def main():
