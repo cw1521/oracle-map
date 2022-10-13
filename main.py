@@ -172,25 +172,36 @@ def get_target_sentence(obj, action):
 
     if obj['is_demoed']:
         return get_sentence(template['is_demoed'])
-    if obj['boost_amount'] > 0:
-        sentence += f" {get_sentence(template['boost_amount']).replace('*r', str(obj['boost_amount']))}"
-    if obj['on_ground']:
-        sentence += f" {get_sentence(template['on_ground'])}"
-    sentence += f" {get_sentence(template['speed']).replace('*r', str(obj['speed']))}"
-    sentence += f" {get_sentence(template['direction']).replace('*r', get_direction(obj['direction']))}"
-    sentence += f" {get_position_sentence(pos[0], pos[1])}"
+    num_sentences = 7
+    nums = [i for i in range(num_sentences)]
+    shuffle(nums)
+
+    for num in nums:
+        match num:
+            case 0:
+                if obj['boost_amount'] > 0:
+                    sentence += f" {get_sentence(template['boost_amount']).replace('*r', str(obj['boost_amount']))}"
+            case 1:
     
-    if action['handbrake']:
-        sentence += f" {get_sentence(template['action']['handbrake'])}"
-    else:
-        temp1 = f"{get_sentence(template['action']['steer']).replace('*r', get_action('steer', action['steer']))}".replace('.', '')
-        temp2 = f"{get_sentence(template['action']['throttle']).replace('*r', get_action('throttle', action['throttle']))}"
-        sentence += f" {' and '.join([temp1, temp2])}"
-
-
-        
-    if action['boost']:
-        sentence += f" {get_sentence(template['action']['boost'])}"
+                if obj['on_ground']:
+                    sentence += f" {get_sentence(template['on_ground'])}"
+            case 2:
+    
+                sentence += f" {get_sentence(template['speed']).replace('*r', str(obj['speed']))}"
+            case 3:
+                sentence += f" {get_sentence(template['direction']).replace('*r', get_direction(obj['direction']))}"
+            case 4:
+                sentence += f" {get_position_sentence(pos[0], pos[1])}"
+            case 5:
+                if action['handbrake']:
+                    sentence += f" {get_sentence(template['action']['handbrake'])}"
+                else:
+                    temp1 = f"{get_sentence(template['action']['steer']).replace('*r', get_action('steer', action['steer']))}".replace('.', '')
+                    temp2 = f"{get_sentence(template['action']['throttle']).replace('*r', get_action('throttle', action['throttle']))}"
+                    sentence += f" {' and '.join([temp1, temp2])}"
+            case 6:
+                if action['boost']:
+                    sentence += f" {get_sentence(template['action']['boost'])}"
 
 
     return sentence.strip()
@@ -240,11 +251,12 @@ def remove_duplicates(dataset):
 
 # returns the oracle from the data set
 def get_oracle(dataset):
+    num_iter = 64
     oracle = {}
     data_list = []
     oracle['all_data'] = []
     oracle['data'] = {}
-    for i in range(64):
+    for i in range(num_iter):
         for data in dataset:
             obj = {}
             action = get_action_obj(data['action'])
